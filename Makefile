@@ -1,7 +1,7 @@
 TARGETS = gol
 
 CC_C = $(CROSS_TOOL)gcc
-CFLAGS = -fopenmp -Wall -g -std=c99 -Werror -pthread 
+CFLAGS = -O3 -fopenmp -Wall -g -std=c99 -Werror -pthread 
 
 all: clean $(TARGETS)
 

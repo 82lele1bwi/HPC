@@ -8,6 +8,7 @@
 
     //#define CONSOLENPRINT 1
     #define FASTVERSION 1
+    #define PARALLEL 1
 
     #define PIXELWIDTH 20
     #define PIXELGAP 2
@@ -17,9 +18,8 @@
     #define ALIVE 0x01
     #define NEXTSTATE 0x02
 
-
-    #define GRID_X_SIZE 15
-    #define GRID_Y_SIZE 15
+    #define GRID_X_SIZE 1000
+    #define GRID_Y_SIZE 1000
 
 #ifdef FASTVERSION
     char grid[GRID_X_SIZE+2][GRID_Y_SIZE+2];
@@ -233,6 +233,7 @@
         genCounter++;
         counterString = g_strdup_printf("%d",genCounter);
         gtk_label_set_text(GTK_LABEL(lblGenCount), counterString);
+        #pragma omp parallel for
         for (int x=0; x<GRID_X_SIZE; x++) {
             for (int y=0; y<GRID_Y_SIZE; y++) {
                 zaehler = zaehleNachbarn(x,y);
@@ -240,7 +241,6 @@
                 //tote Zellen mit 3 lebenden Nachbarn werden neu geboren
                 if ((zaehler == 3) && !(grid[x][y] & ALIVE)) {
                     grid[x][y] |= NEXTSTATE;
-                    printgrid();
                 }  
 
                 //stirbt, wenn weniger als 2 lebende Nachbarn
@@ -261,6 +261,7 @@
         }
 
         // NEXTSTATE auf ALIVE shiften, damit es gezeichnet werden kann
+        #pragma omp parallel for
         for (int x=0; x<GRID_X_SIZE; x++) {
             for (int y=0; y<GRID_Y_SIZE; y++) {
                grid[x][y] >>= 1;
@@ -306,6 +307,9 @@
         genCounter++;
         counterString = g_strdup_printf("%d",genCounter);
         gtk_label_set_text(GTK_LABEL(lblGenCount), counterString);
+#ifdef PARALLEL
+        #pragma omp parallel for simd
+#endif
         for (int x=1; x<GRID_X_SIZE+1; x++) {
             for (int y=1; y<GRID_Y_SIZE+1; y++) {
                 zaehler = zaehleNachbarnFast(x,y);
@@ -313,7 +317,6 @@
                 //tote Zellen mit 3 lebenden Nachbarn werden neu geboren
                 if ((zaehler == 3) && !(grid[x][y] & ALIVE)) {
                     grid[x][y] |= NEXTSTATE;
-                    printgrid();
                 }  
 
                 //stirbt, wenn weniger als 2 lebende Nachbarn
@@ -334,6 +337,9 @@
         }
 
         // NEXTSTATE auf ALIVE shiften, damit es gezeichnet werden kann
+#ifdef PARALLEL
+        #pragma omp parallel for simd
+#endif
         for (int x=1; x<GRID_X_SIZE+1; x++) {
             for (int y=1; y<GRID_Y_SIZE+1; y++) {
                grid[x][y] >>= 1;
